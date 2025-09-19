@@ -18,7 +18,7 @@ export const GET = apiHandler(async (req) => {
   }
 
   const where: Prisma.TransactionWhereInput = {};
-  if (transactionId) where.transactionId = transactionId;
+  if (transactionId) where.id = transactionId;
   if (userId) where.userId = userId;
 
   const transactions = await prisma.transaction.findMany({

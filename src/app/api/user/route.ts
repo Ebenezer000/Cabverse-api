@@ -7,8 +7,6 @@ interface CreateUserSchema {
   email: string;
   address: string;
   username?: string;
-  password?: string;
-  role?: "USER" | "MERCHANT" | "BOTH";
 }
 
 export const GET = apiHandler(async (req) => {
@@ -111,8 +109,6 @@ export const POST = apiHandler(async (req) => {
         email: body.email,
         address: body.address,
         username: body.username || body.email,
-        password: body.password || "",
-        role: body.role || "USER",
       },
     });
 

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/app/utils/apiHandler";
 import { CreateExternalTransactionRequest, TransactionResponse } from "@/app/utils/interfaces";
+import { TransactionType } from "@prisma/client";
 
 export const POST = apiHandler<TransactionResponse>(async (req: NextRequest) => {
   const body: CreateExternalTransactionRequest = await req.json();
@@ -49,7 +50,7 @@ export const POST = apiHandler<TransactionResponse>(async (req: NextRequest) => 
   const transaction = await prisma.transaction.create({
     data: {
       userId,
-      type: type as any,
+      type: type as TransactionType,
       status: 'CONFIRMED', // External transactions are typically confirmed
       fromToken: fromToken || null,
       toToken: toToken || null,

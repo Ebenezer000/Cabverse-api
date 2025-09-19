@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/app/utils/apiHandler";
 import { UserSignupRequest, UserResponse } from "@/app/utils/interfaces";
+import { AuthType } from "@prisma/client";
 
 export const POST = apiHandler<UserResponse>(async (req: NextRequest) => {
   const body: UserSignupRequest = await req.json();
@@ -45,7 +46,7 @@ export const POST = apiHandler<UserResponse>(async (req: NextRequest) => {
       address: address || null,
       email: email || null,
       username: username || null,
-      authType: authType as any
+      authType: authType as AuthType
     }
   });
 

@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/app/utils/apiHandler";
 import { UpdateStakeRequest, StakeResponse } from "@/app/utils/interfaces";
+import { StakeStatus } from "@prisma/client";
 
 export const PUT = apiHandler<StakeResponse>(async (req: NextRequest) => {
   const body: UpdateStakeRequest = await req.json();
@@ -21,7 +22,12 @@ export const PUT = apiHandler<StakeResponse>(async (req: NextRequest) => {
   }
 
   // Prepare update data
-  const updateData: any = {};
+  const updateData: {
+    duration?: number;
+    endTime?: Date;
+    amount?: number;
+    status?: StakeStatus;
+  } = {};
   
   if (duration !== undefined) {
     updateData.duration = duration;
@@ -34,7 +40,7 @@ export const PUT = apiHandler<StakeResponse>(async (req: NextRequest) => {
   }
   
   if (status !== undefined) {
-    updateData.status = status as any;
+    updateData.status = status as StakeStatus;
   }
 
   // Update stake

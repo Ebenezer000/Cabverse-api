@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/app/utils/apiHandler";
 import { getPaginationParams, buildPrismaPagination } from "@/app/utils/response";
 import { TransactionResponse } from "@/app/utils/interfaces";
+import { TransactionType, TransactionStatus } from "@prisma/client";
 
 export const GET = apiHandler<TransactionResponse[]>(async (req: NextRequest) => {
   const { searchParams } = new URL(req.url);
@@ -15,15 +16,20 @@ export const GET = apiHandler<TransactionResponse[]>(async (req: NextRequest) =>
   const pagination = buildPrismaPagination(paginationOptions);
 
   // Build where clause
-  const where: any = {};
+  const where: {
+    userId?: string;
+    type?: TransactionType;
+    status?: TransactionStatus;
+    externalService?: string;
+  } = {};
   if (userId) {
     where.userId = userId;
   }
   if (type) {
-    where.type = type;
+    where.type = type as TransactionType;
   }
   if (status) {
-    where.status = status;
+    where.status = status as TransactionStatus;
   }
   if (externalService) {
     where.externalService = externalService;

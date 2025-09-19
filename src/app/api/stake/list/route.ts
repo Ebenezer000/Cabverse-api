@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { apiHandler } from "@/app/utils/apiHandler";
 import { getPaginationParams, buildPrismaPagination } from "@/app/utils/response";
 import { StakeResponse } from "@/app/utils/interfaces";
+import { StakeStatus } from "@prisma/client";
 
 export const GET = apiHandler<StakeResponse[]>(async (req: NextRequest) => {
   const { searchParams } = new URL(req.url);
@@ -13,12 +14,15 @@ export const GET = apiHandler<StakeResponse[]>(async (req: NextRequest) => {
   const pagination = buildPrismaPagination(paginationOptions);
 
   // Build where clause
-  const where: any = {};
+  const where: {
+    userId?: string;
+    status?: StakeStatus;
+  } = {};
   if (userId) {
     where.userId = userId;
   }
   if (status) {
-    where.status = status;
+    where.status = status as StakeStatus;
   }
 
   // Get stakes with pagination
