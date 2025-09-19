@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  address   String?   @unique // Optional for email-only users
+  email     String?   @unique // Optional for wallet-only users
+  username  String?   // Optional username
+  authType  AuthType  @default(WALLET) // WALLET or EMAIL
+  
+  // Relations
+  stakes       Stake[]
+  transactions Transaction[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([address])
+  @@index([email])
+}
+
+model Stake {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  tokenAddress  String    // Token contract address
+  tokenSymbol    String    // Token symbol (e.g., "ETH", "USDC")
+  amount         Float     // Amount being staked
+  duration       Int       // Duration in days
+  startTime      DateTime  @default(now())
+  endTime        DateTime  // Calculated end time
+  apy            Float     // Annual percentage yield
+  status         StakeStatus @default(ACTIVE)
+  
+  // Optional: for flexible staking
+  isFlexible     Boolean   @default(false)
+  minDuration    Int?      // Minimum duration for flexible stakes
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([endTime])
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  type            TransactionType
+  status          TransactionStatus @default(PENDING)
+  
+  // Swap transaction fields
+  fromToken       String?           // Token being swapped from
+  toToken         String?           // Token being swapped to
+  fromAmount      Float?            // Amount being swapped from
+  toAmount        Float?            // Amount being swapped to
+  swapRate        Float?            // Exchange rate
+  
+  // Transfer transaction fields
+  recipient       String?           // Recipient address
+  amount          Float?            // Transfer amount
+  tokenAddress    String?           // Token being transferred
+  
+  // External transaction reference
+  externalTxHash  String?           // Hash from external service
+  externalService String?           // Service name (e.g., "Uniswap", "1inch")
+  
+  // Metadata
+  gasUsed         Float?            // Gas used
+  gasPrice        Float?            // Gas price
+  blockNumber     Int?              // Block number
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@index([externalTxHash])
+}
+
+enum AuthType {
+  WALLET
+  EMAIL
+  BOTH
+}
+
+enum StakeStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+  UNSTAKED
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  CANCELLED
+}
+
+enum TransactionType {
+  SWAP
+  TRANSFER
+  STAKE
+  UNSTAKE
+  EXTERNAL_TRANSFER
+}
