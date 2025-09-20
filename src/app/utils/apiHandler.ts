@@ -16,15 +16,20 @@ function getCorsHeaders(origin?: string) {
     "http://localhost:3000", // Next.js dev server
     "http://localhost:4173", // Vite preview
     "https://cabverse-dapp.vercel.app", // Production frontend
+    "https://cabverse-api.onrender.com", // Production API (for testing)
+    "http://localhost:3001", // Alternative local port
+    "http://127.0.0.1:5173", // Alternative localhost format
+    "http://127.0.0.1:3000", // Alternative localhost format
   ];
 
   const isAllowedOrigin = origin && allowedOrigins.includes(origin);
   
   return {
-    "Access-Control-Allow-Origin": isAllowedOrigin ? origin : "http://localhost:5173",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Allow-Origin": isAllowedOrigin ? origin : "*", // Allow all origins in development
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin",
     "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Max-Age": "86400", // Cache preflight for 24 hours
   };
 }
 
