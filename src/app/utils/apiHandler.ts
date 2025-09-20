@@ -24,8 +24,12 @@ function getCorsHeaders(origin?: string) {
 
   const isAllowedOrigin = origin && allowedOrigins.includes(origin);
   
+  // When credentials are false, we can use * for origin
+  // When credentials are true, we must specify exact origins
+  const allowOrigin = isAllowedOrigin ? origin : "*";
+  
   return {
-    "Access-Control-Allow-Origin": isAllowedOrigin ? origin : "*", // Allow all origins in development
+    "Access-Control-Allow-Origin": allowOrigin,
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin",
     "Access-Control-Allow-Credentials": "false",
@@ -36,17 +40,16 @@ function getCorsHeaders(origin?: string) {
 export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was successful") {
   return async function (req: NextRequest) {
     const origin = req.headers.get("origin");
-    const corsHeaders = getCorsHeaders(origin || undefined);
+    const referer = req.headers.get("referer");
+    const userAgent = req.headers.get("user-agent");
     
+    console.log("=== Request Debug Info ===");
+    console.log("Method:", req.method);
+    console.log("URL:", req.url);
     console.log("Incoming origin:", origin);
-    console.log("CORS headers:", corsHeaders);
-    // Handle CORS preflight requests
-    if (req.method === "OPTIONS") {
-      return new NextResponse(null, {
-        status: 204,
-        headers: corsHeaders,
-      });
-    }
+    console.log("Referer:", referer);
+    console.log("User-Agent:", userAgent);
+    console.log("=========================");
 
     try {
       const { data, message, pagination } = await handler(req);
@@ -55,7 +58,6 @@ export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was 
         {
           status: 200,
           headers: {
-            ...corsHeaders,
             "Content-Type": "application/json",
           },
         }
@@ -67,7 +69,6 @@ export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was 
         {
           status: 500,
           headers: {
-            ...corsHeaders,
             "Content-Type": "application/json",
           },
         }
