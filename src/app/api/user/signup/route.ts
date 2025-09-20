@@ -27,7 +27,18 @@ export const POST = apiHandler<UserResponse>(async (req: NextRequest) => {
       where: { address }
     });
     if (existingUserByAddress) {
-      throw new Error("User with this address already exists");
+      return {
+        data: {
+          id: existingUserByAddress.id,
+          address: existingUserByAddress.address || undefined,
+          email: existingUserByAddress.email || undefined,
+          username: existingUserByAddress.username || undefined,
+          authType: existingUserByAddress.authType,
+          createdAt: existingUserByAddress.createdAt.toISOString(),
+          updatedAt: existingUserByAddress.updatedAt.toISOString()
+        },
+        message: "User Logged In successfully"
+      };
     }
   }
 
