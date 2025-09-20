@@ -9,19 +9,35 @@ type Handler<T> = (req: NextRequest) => Promise<{
   pagination?: PaginationInfo;
 }>;
 
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*", // Replace '*' with your domain in production
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
+// Dynamic CORS headers based on environment
+function getCorsHeaders(origin?: string) {
+  const allowedOrigins = [
+    "http://localhost:5173", // Vite dev server
+    "http://localhost:3000", // Next.js dev server
+    "http://localhost:4173", // Vite preview
+    "https://cabverse-dapp.vercel.app", // Production frontend
+  ];
+
+  const isAllowedOrigin = origin && allowedOrigins.includes(origin);
+  
+  return {
+    "Access-Control-Allow-Origin": isAllowedOrigin ? origin : "http://localhost:5173",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
+    "Access-Control-Allow-Credentials": "true",
+  };
+}
 
 export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was successful") {
   return async function (req: NextRequest) {
+    const origin = req.headers.get("origin");
+    const corsHeaders = getCorsHeaders(origin || undefined);
+    
     // Handle CORS preflight requests
     if (req.method === "OPTIONS") {
       return new NextResponse(null, {
         status: 204,
-        headers: CORS_HEADERS,
+        headers: corsHeaders,
       });
     }
 
@@ -32,7 +48,7 @@ export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was 
         {
           status: 200,
           headers: {
-            ...CORS_HEADERS,
+            ...corsHeaders,
             "Content-Type": "application/json",
           },
         }
@@ -44,7 +60,7 @@ export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was 
         {
           status: 500,
           headers: {
-            ...CORS_HEADERS,
+            ...corsHeaders,
             "Content-Type": "application/json",
           },
         }
