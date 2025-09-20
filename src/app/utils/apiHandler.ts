@@ -9,36 +9,19 @@ type Handler<T> = (req: NextRequest) => Promise<{
   pagination?: PaginationInfo;
 }>;
 
-// Allowed origins for CORS
-const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "http://localhost:5173", // Vite dev server
-  "http://localhost:4173", // Vite preview
-  "https://cabverse-dapp.vercel.app",
-];
-
-// Function to get CORS headers based on origin
-function getCorsHeaders(origin: string | null) {
-  const isAllowedOrigin = origin && ALLOWED_ORIGINS.includes(origin);
-  
-  return {
-    "Access-Control-Allow-Origin": isAllowedOrigin ? origin : ALLOWED_ORIGINS[0], // Default to first allowed origin
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    "Access-Control-Allow-Credentials": "true",
-  };
-}
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*", // Replace '*' with your domain in production
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
 
 export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was successful") {
   return async function (req: NextRequest) {
-    const origin = req.headers.get("origin");
-    const corsHeaders = getCorsHeaders(origin);
-    
     // Handle CORS preflight requests
     if (req.method === "OPTIONS") {
       return new NextResponse(null, {
         status: 204,
-        headers: corsHeaders,
+        headers: CORS_HEADERS,
       });
     }
 
@@ -49,7 +32,7 @@ export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was 
         {
           status: 200,
           headers: {
-            ...corsHeaders,
+            ...CORS_HEADERS,
             "Content-Type": "application/json",
           },
         }
@@ -61,7 +44,7 @@ export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was 
         {
           status: 500,
           headers: {
-            ...corsHeaders,
+            ...CORS_HEADERS,
             "Content-Type": "application/json",
           },
         }
