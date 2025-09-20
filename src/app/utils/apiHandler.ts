@@ -38,6 +38,7 @@ export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was 
     const origin = req.headers.get("origin");
     const corsHeaders = getCorsHeaders(origin || undefined);
     
+    console.log("Incoming origin:", origin);
     // Handle CORS preflight requests
     if (req.method === "OPTIONS") {
       return new NextResponse(null, {
