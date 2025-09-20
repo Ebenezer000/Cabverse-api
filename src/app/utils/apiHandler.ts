@@ -25,18 +25,17 @@ function getCorsHeaders(origin?: string) {
   const isAllowedOrigin = origin && allowedOrigins.includes(origin);
   
   return {
-    "Access-Control-Allow-Origin": isAllowedOrigin ? origin : "*", // Allow all origins in development
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin",
     "Access-Control-Allow-Credentials": "false",
-    "Access-Control-Max-Age": "86400", // Cache preflight for 24 hours
   };
 }
 
 export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was successful") {
   return async function (req: NextRequest) {
     const origin = req.headers.get("origin");
-    const corsHeaders = getCorsHeaders(origin || undefined);
+    const corsHeaders = getCorsHeaders(origin || "https://cabverse-dapp.vercel.app");
     
     console.log("Incoming origin:", origin);
     // Handle CORS preflight requests
