@@ -43,12 +43,18 @@ model Stake {
   isFlexible     Boolean   @default(false)
   minDuration    Int?      // Minimum duration for flexible stakes
   
+  // Pool information
+  poolId         Int?      // Pool ID from smart contract
+  poolName       String?   // Pool name for display
+  poolCategory   String?   // Pool category (e.g., "petrol-cars", "electric-cars")
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
   @@index([userId])
   @@index([status])
   @@index([endTime])
+  @@index([poolId])
 }
 
 model Transaction {

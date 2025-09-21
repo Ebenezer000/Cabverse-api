@@ -30,7 +30,7 @@ export const POST = apiHandler<TransactionResponse>(async (req: NextRequest) => 
 
   // Validate user exists
   const user = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { address: userId }
   });
   
   if (!user) {
@@ -49,7 +49,7 @@ export const POST = apiHandler<TransactionResponse>(async (req: NextRequest) => 
   // Create external transaction
   const transaction = await prisma.transaction.create({
     data: {
-      userId,
+      userId: user.id,
       type: type as TransactionType,
       status: 'CONFIRMED', // External transactions are typically confirmed
       fromToken: fromToken || null,
@@ -70,7 +70,7 @@ export const POST = apiHandler<TransactionResponse>(async (req: NextRequest) => 
   return {
     data: {
       id: transaction.id,
-      userId: transaction.userId,
+      userId: user.address || user.id, // Return the user's address or fallback to ID
       type: transaction.type,
       status: transaction.status,
       fromToken: transaction.fromToken || undefined,

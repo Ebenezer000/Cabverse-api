@@ -19,7 +19,26 @@ export const GET = apiHandler(async (req) => {
 
   const where: Prisma.TransactionWhereInput = {};
   if (transactionId) where.id = transactionId;
-  if (userId) where.userId = userId;
+  if (userId) {
+    // First find the user by address to get their internal ID
+    const user = await prisma.user.findUnique({
+      where: { address: userId }
+    });
+    if (user) {
+      where.userId = user.id;
+    } else {
+      // If user not found, return empty result
+      return {
+        data: [],
+        message: "No transactions found for user",
+        pagination: {
+          totalItems: 0,
+          totalPages: 0,
+          currentPage: paginationParams.page || 1,
+        },
+      };
+    }
+  }
 
   const transactions = await prisma.transaction.findMany({
     where,

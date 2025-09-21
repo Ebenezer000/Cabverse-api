@@ -26,6 +26,14 @@ export interface CreateStakeRequest {
   apy: number;
   isFlexible?: boolean;
   minDuration?: number;
+  poolId?: number;
+  poolName?: string;
+  poolCategory?: string;
+  externalTxHash?: string; // Blockchain transaction hash
+  externalService?: string; // Service that processed the transaction
+  gasUsed?: number;
+  gasPrice?: number;
+  blockNumber?: number;
 }
 
 export interface UpdateStakeRequest {
@@ -48,6 +56,9 @@ export interface StakeResponse {
   status: string;
   isFlexible: boolean;
   minDuration?: number;
+  poolId?: number;
+  poolName?: string;
+  poolCategory?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -19,7 +19,7 @@ export const PUT = apiHandler<UserResponse>(async (req: NextRequest) => {
 
   // Check if user exists
   const existingUser = await prisma.user.findUnique({
-    where: { id: userId }
+    where: { address: userId }
   });
 
   if (!existingUser) {
@@ -51,7 +51,7 @@ export const PUT = apiHandler<UserResponse>(async (req: NextRequest) => {
 
   // Update user
   const user = await prisma.user.update({
-    where: { id: userId },
+    where: { id: existingUser.id },
     data: updateData
   });
 

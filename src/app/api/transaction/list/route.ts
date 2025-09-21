@@ -22,9 +22,28 @@ export const GET = apiHandler<TransactionResponse[]>(async (req: NextRequest) =>
     status?: TransactionStatus;
     externalService?: string;
   } = {};
+  
   if (userId) {
-    where.userId = userId;
+    // First find the user by address to get their internal ID
+    const user = await prisma.user.findUnique({
+      where: { address: userId }
+    });
+    if (user) {
+      where.userId = user.id;
+    } else {
+      // If user not found, return empty result
+      return {
+        data: [],
+        message: "No transactions found for user",
+        pagination: {
+          totalItems: 0,
+          totalPages: 0,
+          currentPage: paginationOptions.page!
+        }
+      };
+    }
   }
+  
   if (type) {
     where.type = type as TransactionType;
   }
@@ -59,7 +78,7 @@ export const GET = apiHandler<TransactionResponse[]>(async (req: NextRequest) =>
   return {
     data: transactions.map(transaction => ({
       id: transaction.id,
-      userId: transaction.userId,
+      userId: transaction.user.address || transaction.user.id, // Return the user's address or fallback to ID
       type: transaction.type,
       status: transaction.status,
       fromToken: transaction.fromToken || undefined,

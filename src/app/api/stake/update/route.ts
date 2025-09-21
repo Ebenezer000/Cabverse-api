@@ -43,11 +43,33 @@ export const PUT = apiHandler<StakeResponse>(async (req: NextRequest) => {
     updateData.status = status as StakeStatus;
   }
 
-  // Update stake
-  const stake = await prisma.stake.update({
-    where: { id: stakeId },
-    data: updateData
+  // Update stake and create transaction if unstaking
+  const result = await prisma.$transaction(async (tx) => {
+    // Update stake
+    const stake = await tx.stake.update({
+      where: { id: stakeId },
+      data: updateData
+    });
+
+    // Create transaction record if status is being changed to UNSTAKED
+    if (status === 'UNSTAKED') {
+      await tx.transaction.create({
+        data: {
+          userId: existingStake.userId,
+          type: 'UNSTAKE',
+          status: 'CONFIRMED',
+          amount: existingStake.amount,
+          tokenAddress: existingStake.tokenAddress,
+          externalTxHash: null,
+          externalService: 'INTERNAL_UNSTAKING'
+        }
+      });
+    }
+
+    return stake;
   });
+
+  const stake = result;
 
   return {
     data: {
