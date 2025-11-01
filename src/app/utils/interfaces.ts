@@ -29,6 +29,9 @@ export interface CreateStakeRequest {
   poolId?: number;
   poolName?: string;
   poolCategory?: string;
+  cbvRateAtStake?: number; // CBV token rate at time of stake (from contract/API)
+  returnPercentage?: number; // Return percentage in basis points (APY * 100)
+  isEthStake?: boolean; // true for ETH staking, false for token staking
   externalTxHash?: string; // Blockchain transaction hash
   externalService?: string; // Service that processed the transaction
   gasUsed?: number;

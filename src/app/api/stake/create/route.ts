@@ -17,6 +17,9 @@ export const POST = apiHandler<StakeResponse>(async (req: NextRequest) => {
     poolId, 
     poolName, 
     poolCategory,
+    cbvRateAtStake,
+    returnPercentage,
+    isEthStake,
     externalTxHash,
     externalService,
     gasUsed,
@@ -42,6 +45,19 @@ export const POST = apiHandler<StakeResponse>(async (req: NextRequest) => {
   const startTime = new Date();
   const endTime = new Date(startTime.getTime() + duration * 24 * 60 * 60 * 1000);
 
+  // Calculate returnPercentage from APY if not provided (APY in basis points = APY * 100)
+  const calculatedReturnPercentage = returnPercentage ?? Math.floor(apy * 100);
+  
+  // Determine isEthStake from tokenSymbol if not provided
+  const calculatedIsEthStake = isEthStake ?? (tokenSymbol.toUpperCase() === 'ETH');
+
+  // Validate cbvRateAtStake - if not provided, we need to handle it
+  // For now, if not provided, use 0 as a placeholder (this should be fetched from contract)
+  // TODO: Fetch cbvRateAtStake from the contract based on the transaction or make it required
+  if (cbvRateAtStake === undefined || cbvRateAtStake === null) {
+    throw new Error("cbvRateAtStake is required. Please provide the CBV rate at stake time from the contract.");
+  }
+
   // Create stake and transaction in a transaction
   const result = await prisma.$transaction(async (tx) => {
     // Create stake
@@ -59,7 +75,10 @@ export const POST = apiHandler<StakeResponse>(async (req: NextRequest) => {
         minDuration: minDuration || null,
         poolId: poolId || null,
         poolName: poolName || null,
-        poolCategory: poolCategory || null
+        poolCategory: poolCategory || null,
+        cbvRateAtStake: cbvRateAtStake,
+        returnPercentage: calculatedReturnPercentage,
+        isEthStake: calculatedIsEthStake
       }
     });
 

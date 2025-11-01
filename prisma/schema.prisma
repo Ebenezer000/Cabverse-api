@@ -31,13 +31,18 @@ model Stake {
   user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   tokenAddress  String    // Token contract address
-  tokenSymbol    String    // Token symbol (e.g., "ETH", "USDC")
+  tokenSymbol    String    // Token symbol (e.g., "ETH", "USDT", "DAI")
   amount         Float     // Amount being staked
   duration       Int       // Duration in days
   startTime      DateTime  @default(now())
   endTime        DateTime  // Calculated end time
   apy            Float     // Annual percentage yield
   status         StakeStatus @default(ACTIVE)
+  
+  // Staking type and rates
+  isEthStake     Boolean   @default(false) // true for ETH staking, false for token staking
+  cbvRateAtStake Float     // CBV token rate at time of stake (from API)
+  returnPercentage Float   // Return percentage pegged at stake time
   
   // Optional: for flexible staking
   isFlexible     Boolean   @default(false)
@@ -55,6 +60,7 @@ model Stake {
   @@index([status])
   @@index([endTime])
   @@index([poolId])
+  @@index([isEthStake])
 }
 
 model Transaction {

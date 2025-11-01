@@ -37,6 +37,14 @@ export function apiHandler<T>(handler: Handler<T>, defaultMessage = "Action was 
       );
     } catch (error) {
       const msg = error instanceof Error ? error.message : "An unexpected error occurred";
+      
+      // Log error details to console for debugging
+      console.log("=== Error Debug Info ===");
+      console.log("Error message:", msg);
+      console.log("Error stack:", error instanceof Error ? error.stack : "No stack trace available");
+      console.log("Error type:", error instanceof Error ? error.constructor.name : typeof error);
+      console.log("=========================");
+      
       return new NextResponse(
         JSON.stringify(formatResponse(500, msg, null)),
         {
