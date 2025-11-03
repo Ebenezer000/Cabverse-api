@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { safePrismaQuery } from "@/lib/prismaHelpers";
 import { apiHandler } from "@/app/utils/apiHandler";
 import { CreateStakeRequest, StakeResponse } from "@/app/utils/interfaces";
 
@@ -32,10 +33,12 @@ export const POST = apiHandler<StakeResponse>(async (req: NextRequest) => {
     throw new Error("Missing required fields: userId, tokenAddress, tokenSymbol, amount, duration, apy");
   }
 
-  // Validate user exists
-  const user = await prisma.user.findUnique({
-    where: { address: userId }
-  });
+  // Validate user exists (with retry on connection errors)
+  const user = await safePrismaQuery(() =>
+    prisma.user.findUnique({
+      where: { address: userId }
+    })
+  );
   
   if (!user) {
     throw new Error("User not found");
@@ -58,8 +61,9 @@ export const POST = apiHandler<StakeResponse>(async (req: NextRequest) => {
     throw new Error("cbvRateAtStake is required. Please provide the CBV rate at stake time from the contract.");
   }
 
-  // Create stake and transaction in a transaction
-  const result = await prisma.$transaction(async (tx) => {
+  // Create stake and transaction in a transaction (with retry on connection errors)
+  const result = await safePrismaQuery(() =>
+    prisma.$transaction(async (tx) => {
     // Create stake
     const stake = await tx.stake.create({
       data: {
@@ -99,7 +103,8 @@ export const POST = apiHandler<StakeResponse>(async (req: NextRequest) => {
     });
 
     return { stake, transaction };
-  });
+    })
+  );
 
   const { stake } = result;
 
